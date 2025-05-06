@@ -13,12 +13,25 @@
   <link rel="stylesheet" href="codemirror-5.65.19/theme/dracula.css"/>
   <script src="codemirror-5.65.19/addon/edit/closebrackets.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+  <script src="codemirror-5.65.19/addon/edit/matchtags.js"></script>
+  <script src="codemirror-5.65.19/addon/edit/closetag.js"></script>
+  <script src="codemirror-5.65.19/addon/fold/xml-fold.js"></script>
+  <link rel="stylesheet" href="codemirror-5.65.19/addon/hint/show-hint.css">
+  <script src="codemirror-5.65.19/addon/hint/show-hint.js"></script>
+  <script src="codemirror-5.65.19/addon/hint/anyword-hint.js"></script>
+
+  <style>
+    .CodeMirror.placeholder-code .CodeMirror-code {
+      opacity: 0.2;
+      transition: opacity 0.3s ease;  
+    }
+  </style>
 </head>
 <body>
   <div class="row m-3">
     <div class="col">
       <div class="d-flex justify-content-between mb-2 bg-dark rounded p-2">
-        <div class="col-12 w-25 ">
+        <div class="col-12 w-25 pt-3">
           <select class="form-select" id="inlineFormSelectPref">
             <option selected>Choose...</option>
             <option value="Java">Java</option>
@@ -26,10 +39,12 @@
             <option value="Cpp">Cpp</option>
           </select>
         </div>
-        <div id="sprint-timer" class="text-center fs-4 fw-bold text-white bg-success rounded p-2 my-3 w-25 mx-auto"></div>
+        <div id="sprint-timer" class="text-center fs-4 fw-bold text-white bg-success rounded p-1 my-3 w-25 mx-auto">00:00</div>
         <div>
-          <button type="button" id="sprint-btn" class="btn btn-success">Coding Sprint</button>
-          <button type="button" id="Run" class="btn btn-success"><i class="bi bi-play-fill"></i></button>
+          <button type="button" id="sprint-btn" class="btn btn-success mt-3 ">Start Timer</button>
+          <button type="button" id="pause-btn" class="btn btn-warning mt-3" style="display: none;">Pause</button>
+          <button type="button" id="stop-btn" class="btn btn-danger mt-3" style="display: none;">Stop</button>
+          <button type="button" id="Run" class="btn btn-success mt-3"><i class="bi bi-play-fill"></i></button>
         </div>
       </div>
       <textarea class="form-control" id="editor"></textarea>
@@ -52,10 +67,16 @@
       theme: "dracula",
       lineNumbers: true,
       autoCloseBrackets: true,
+      automatchtags: { bothTags: true },
+      autoclosetag: true,
+      extraKeys: { "Ctrl-Space": "autocomplete" },
     });
 
     var width = window.innerWidth;
     editor.setSize(0.7 * width, "80vh");
+    editor.on("beforeChange", function () {
+      editor.getWrapperElement().classList.remove("placeholder-code");
+    });
 
     var input = document.getElementById("input");
     var output = document.getElementById("output");
@@ -63,12 +84,29 @@
     var option = document.getElementById("inlineFormSelectPref");
 
     const langMap = {
-      "Cpp": 54,      
-      "Java": 62,     
-      "Python": 71    
+      "Cpp": 54,
+      "Java": 62,
+      "Python": 71
+    };
+
+    const helloTemplates = {
+      "Cpp": `#include <iostream>
+    using namespace std;
+
+    int main() {
+        cout << "Hello, World!" << endl;
+        return 0;
+    }`,
+      "Java": `public class Main {
+        public static void main(String[] args) {
+            System.out.println("Hello, World!");
+        }
+    }`,
+      "Python": `print("Hello, World!")`
     };
 
     option.addEventListener("change", function () {
+      let lang = option.value;
       if (option.value == "Java") {
         editor.setOption("mode", "text/x-java");
       } else if (option.value == "Python") {
@@ -76,6 +114,8 @@
       } else {
         editor.setOption("mode", "text/x-c++src");
       }
+      editor.setValue(helloTemplates[lang] || "");
+      editor.getWrapperElement().classList.add("placeholder-code");
     });
 
     run.addEventListener("click", async function () {
@@ -97,7 +137,7 @@
           headers: {
             "Content-Type": "application/json",
             "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
-            "X-RapidAPI-Key": "3923cef974msh92e017bcad740edp15f7fcjsn7edcd4cfba35" // 🔴 Replace with your actual API key
+            "X-RapidAPI-Key": "3923cef974msh92e017bcad740edp15f7fcjsn7edcd4cfba35"
           },
           body: JSON.stringify({
             source_code: code,
@@ -115,28 +155,64 @@
 
       run.disabled = false;
     });
-    let sprintBtn=document.getElementById("sprint-btn");
+
+    // Stopwatch Timer Logic
+    let sprintBtn = document.getElementById("sprint-btn");
     let timerDisplay = document.getElementById("sprint-timer");
+    let pauseBtn = document.getElementById("pause-btn");
+    let stopBtn = document.getElementById("stop-btn");
+
     let timerInterval;
-    sprintBtn.addEventListener("click",()=>{
-      alert("⏱️ 25-minute Coding Sprint started! Stay focused and avoid distractions.");
-      let timeLeft=25*60;
+    let elapsedTime = 0; // Start from 0 seconds
+    let isPaused = false;
+
+    // Initially hide buttons
+    pauseBtn.style.display = "none";
+    stopBtn.style.display = "none";
+
+    function updateStopwatch() {
+      const minutes = Math.floor(elapsedTime / 60).toString().padStart(2, '0');
+      const seconds = (elapsedTime % 60).toString().padStart(2, '0');
+      timerDisplay.textContent = `${minutes}:${seconds}`;
+
+      elapsedTime++;
+    }
+
+    sprintBtn.addEventListener("click", () => {
+      alert("Timer started! Time to focus!");
       clearInterval(timerInterval);
+      elapsedTime = 0; 
+      isPaused = false;
+      updateStopwatch();
+      timerInterval = setInterval(updateStopwatch, 1000);
 
-      function updateTimer(){
-        const minutes = Math.floor(timeLeft/60).toString().padStart(2,'0');
-        const seconds =(timeLeft%60).toString().padStart(2,'0');
-        timerDisplay.textContent=`⏳ ${minutes}:${seconds} remaining`;
+      pauseBtn.style.display = "inline-block";
+      stopBtn.style.display = "inline-block";
+      pauseBtn.textContent = "Pause";
+    });
 
-        if(timeLeft<=0){
+    pauseBtn.addEventListener("click", () => {
+      if (timerInterval) {
+        if (isPaused) {
+          timerInterval = setInterval(updateStopwatch, 1000);
+          pauseBtn.textContent = "Pause";
+        } else {
           clearInterval(timerInterval);
-          timerDisplay.textContent="✅ Sprint complete!";
+          pauseBtn.textContent = "Resume";
         }
-        timeLeft--;
+        isPaused = !isPaused;
       }
-      updateTimer();
-      timerInterval=setInterval(updateTimer,1000);
-    })
+    });
+
+    stopBtn.addEventListener("click", () => {
+      clearInterval(timerInterval);
+      elapsedTime = 0;
+      timerDisplay.textContent = "00:00";
+      pauseBtn.style.display = "none";
+      stopBtn.style.display = "none";
+      pauseBtn.textContent = "Pause";
+      isPaused = false;
+    });
   </script>
 </body>
 </html>

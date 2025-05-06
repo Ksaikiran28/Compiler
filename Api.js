@@ -39,7 +39,7 @@ app.post("/compile", async (req, res) => {
             headers: {
                 "Content-Type": "application/json",
                 "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
-                "X-RapidAPI-Key": process.env.RAPIDAPI_KEY || "your-api-key-here" // set your key as env var or hardcode
+                "X-RapidAPI-Key": process.env.RAPIDAPI_KEY || "your-api-key-here" 
             }
         });
 
