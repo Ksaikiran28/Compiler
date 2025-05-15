@@ -21,9 +21,21 @@ app.post("/compile", async (req, res) => {
     const { code, input, lang } = req.body;
 
     const languageMap = {
+        "C": 50,
         "Cpp": 54,
         "Java": 62,
+        "JavaScript": 63,
         "Python": 71,
+        "C#": 51,
+        "Go": 60,
+        "Ruby": 72,
+        "Swift": 83,
+        "Kotlin": 78,
+        "Rust": 73,
+        "PHP": 68,
+        "TypeScript": 74,
+        "R": 80,
+        "Scala": 81,
         "Sql": 82
     };
 
