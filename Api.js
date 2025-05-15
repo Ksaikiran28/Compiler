@@ -7,8 +7,9 @@ require("dotenv").config();
 // Middleware
 app.use(express.json());
 
-// Serve static CodeMirror files
+// Serve static files (for CodeMirror and any other frontend files)
 app.use("/codemirror-5.65.19", express.static(path.join(__dirname, "codemirror-5.65.19")));
+app.use(express.static(path.join(__dirname))); // Serve other assets (style.css, script.js, etc.)
 
 // Serve HTML page
 app.get("/", function (req, res) {
@@ -22,7 +23,8 @@ app.post("/compile", async (req, res) => {
     const languageMap = {
         "Cpp": 54,
         "Java": 62,
-        "Python": 71
+        "Python": 71,
+        "Sql": 82
     };
 
     const language_id = languageMap[lang];
@@ -31,17 +33,21 @@ app.post("/compile", async (req, res) => {
     }
 
     try {
-        const response = await axios.post("https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=false&wait=true", {
-            source_code: code,
-            stdin: input,
-            language_id
-        }, {
-            headers: {
-                "Content-Type": "application/json",
-                "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
-                "X-RapidAPI-Key": process.env.RAPIDAPI_KEY || "your-api-key-here" 
+        const response = await axios.post(
+            "https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=false&wait=true",
+            {
+                source_code: code,
+                stdin: input,
+                language_id
+            },
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
+                    "X-RapidAPI-Key": process.env.RAPIDAPI_KEY || "your-api-key-here"
+                }
             }
-        });
+        );
 
         const result = response.data;
 
