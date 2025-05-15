@@ -426,34 +426,47 @@
 
     // Custom autocomplete function integrating language keywords
     function customHint(cm) {
-      const cur = cm.getCursor();
-      const token = cm.getTokenAt(cur);
-      const start = token.start;
-      const end = cur.ch;
-      const currentWord = token.string.slice(0, end - start);
-      const lang = currentLang;
+  const cur = cm.getCursor();
+  const token = cm.getTokenAt(cur);
+  const start = token.start;
+  const end = cur.ch;
+  const currentWord = token.string.slice(0, end - start);
+  const lang = currentLang;
 
-      let list = [];
-      if (keywords[lang]) {
-        list = keywords[lang].filter(kw => kw.startsWith(currentWord));
-      }
+  // If no keywords for language or empty word, don't suggest
+  if (!keywords[lang] || !currentWord) return null;
 
-      return {
-        list: list.length ? list : keywords[lang],
-        from: CodeMirror.Pos(cur.line, start),
-        to: CodeMirror.Pos(cur.line, end)
-      };
-    }
+  // Filter keywords that start exactly with currentWord
+  const list = keywords[lang].filter(kw => kw.startsWith(currentWord));
 
-    // Register hint helper
-    CodeMirror.registerHelper("hint", "custom", customHint);
+  // If typed word doesn't match any keyword start, no suggestions
+  if (list.length === 0) return null;
 
-    // Trigger autocomplete on input change (optional)
-    editor.on("inputRead", function(cm, change) {
-      if (change.text[0].match(/[\w.]/)) {
-        cm.showHint({ hint: CodeMirror.hint.custom });
-      }
+  return {
+    list: list,
+    from: CodeMirror.Pos(cur.line, start),
+    to: CodeMirror.Pos(cur.line, end)
+  };
+}
+
+// Register helper
+CodeMirror.registerHelper("hint", "custom", customHint);
+
+editor.on("inputRead", function(cm, change) {
+  if (change.text[0].match(/[\w.]/)) {
+    const cur = cm.getCursor();
+    const token = cm.getTokenAt(cur);
+    const currentWord = token.string.slice(0, cur.ch - token.start);
+
+    if (!currentWord) return;
+
+    cm.showHint({
+      hint: CodeMirror.hint.custom,
+      completeSingle: currentWord.length >= 4 // auto-insert only if 4 or more chars typed
     });
+  }
+});
+
 
     // Language switch buttons
     const langButtons = document.querySelectorAll("#sidebar .lang-btn");
