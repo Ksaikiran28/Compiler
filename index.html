@@ -216,7 +216,11 @@
     /* Layout for editor and I/O */
     #editor-container {
       flex: 1;
-      overflow: hidden;
+      min-height: 40vh;
+      max-height: 100%;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
     }
 
     #input-output-container {
@@ -249,8 +253,10 @@
 
     /* Adjust CodeMirror size */
     .CodeMirror {
-      height: calc(100% - 4px);
-      border-radius: 4px;
+      flex: 1;
+      min-height: 400px;
+      max-height: 100%;
+      overflow: auto;
     }
     
   </style>
@@ -411,17 +417,19 @@
 
     // Setup CodeMirror editor
     const editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
-      mode: modeMap["cpp"],
-      theme: "dracula",
-      lineNumbers: true,
-      autoCloseBrackets: true,
-      matchTags: { bothTags: true },
-      autoCloseTags: true,
-      extraKeys: {
-        "Ctrl-Space": "autocomplete",
-        "Ctrl-/": "toggleComment"
-      }
-    });
+    mode: modeMap["cpp"],
+    theme: "dracula",
+    lineNumbers: true,
+    autoCloseBrackets: true,
+    matchTags: { bothTags: true },
+    autoCloseTags: true,
+    extraKeys: {
+      "Ctrl-Space": "autocomplete",
+      "Ctrl-/": "toggleComment"
+    },
+    viewportMargin: Infinity // ✅ comma added before this line
+  });
+
     editor.setSize("100%", "70vh");
 
     // Custom autocomplete function integrating language keywords
