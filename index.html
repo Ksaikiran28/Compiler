@@ -273,8 +273,8 @@
     <button class="lang-btn" data-lang="swift">Swift</button>
     <button class="lang-btn" data-lang="go">Go</button>
     <button class="lang-btn" data-lang="typescript">TypeScript</button>
-    <button class="lang-btn" data-lang="htmlmixed">HTML</button>
-    <button class="lang-btn" data-lang="css">CSS</button>
+    <!-- <button class="lang-btn" data-lang="htmlmixed">HTML</button>
+    <button class="lang-btn" data-lang="css">CSS</button> -->
   </div>
 
   <div id="main-content">
@@ -332,9 +332,12 @@
         "while", "with", "yield"
       ],
       sql: [
-        "SELECT", "FROM", "WHERE", "INSERT", "UPDATE", "DELETE", "JOIN", "INNER", "LEFT",
-        "RIGHT", "FULL", "GROUP", "BY", "ORDER", "HAVING", "CREATE", "ALTER", "DROP",
-        "TABLE", "VIEW", "INDEX", "UNION", "ALL", "DISTINCT", "AS", "AND", "OR", "NOT", "NULL"
+        "SELECT", "select", "FROM", "from", "WHERE", "where", "INSERT", "insert", "UPDATE", "update",
+        "DELETE", "delete", "JOIN", "join", "INNER", "inner", "LEFT", "left", "RIGHT", "right", "FULL",
+        "full", "GROUP", "group", "BY", "by", "ORDER", "order", "HAVING", "having", "CREATE", "create",
+        "ALTER", "alter", "DROP", "drop", "TABLE", "table", "VIEW", "view", "INDEX", "index", "UNION", 
+        "union", "ALL", "all", "DISTINCT", "distinct", "AS", "as", "AND", "and", "OR", "or", "NOT", "not",
+         "NULL", "null"
       ]
     };
 
@@ -350,8 +353,8 @@
       go: 60,
       typescript: 74,
       javascript: 63,
-      css: 80,
-      htmlmixed: 51
+      // css: 80,
+      // htmlmixed: 51
 
     };
     const modeMap = {
@@ -365,8 +368,8 @@
       go: "text/x-go",
       typescript: "text/typescript",
       javascript: "text/javascript",
-      css: "css",
-      htmlmixed: "htmlmixed"
+      // css: "css",
+      // htmlmixed: "htmlmixed"
     };
 
     // Hello world templates per language
@@ -400,18 +403,18 @@
     }`,
       typescript: `let message: string = "Hello, World!";
     console.log(message);`,
-      css: `body {
-        background-color: lightblue;
-    }`,
-      htmlmixed: `<!DOCTYPE html>
-    <html>
-      <head>
-        <title>Hello</title>
-      </head>
-      <body>
-        <h1>Hello, World!</h1>
-      </body>
-    </html>`
+    //   css: `body {
+    //     background-color: lightblue;
+    // }`,
+    //   htmlmixed: `<!DOCTYPE html>
+    // <html>
+    //   <head>
+    //     <title>Hello</title>
+    //   </head>
+    //   <body>
+    //     <h1>Hello, World!</h1>
+    //   </body>
+    // </html>`
     };
 
 
@@ -427,7 +430,7 @@
       "Ctrl-Space": "autocomplete",
       "Ctrl-/": "toggleComment"
     },
-    viewportMargin: Infinity // ✅ comma added before this line
+    viewportMargin: Infinity // comma added before this line
   });
 
     editor.setSize("100%", "70vh");
